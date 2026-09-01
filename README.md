@@ -122,6 +122,66 @@ Loads a local CSV file and answers analytical questions about it using pure-Pyth
 ### 24. Todo-list Agent
 Maintains a per-session todo list that the user can add to, query, mark done, and clear across multiple turns.
 
+### 25. Meeting Summarizer Agent
+Parses a raw meeting transcript into a structured record (attendees, decisions, action items with owners + due dates, parking lot).
+
+### 26. Stock Research Agent
+Multi-source equity research: price snapshot + news sentiment + peer comparison, with a buy/hold/sell verdict.
+
+### 27. Resume Tailor Agent
+Compares a resume against a job description and produces a skill-gap report, keyword coverage and 5 rewritten bullets.
+
+### 28. Trip Planner Agent
+Builds a multi-city itinerary with day balance, budget check, and structured JSON output.
+
+### 29. Diet Coach Agent
+Computes a Mifflin-St Jeor calorie target, fills a single-day meal plan, and surfaces substitutions + a shopping list.
+
+### 30. Code Reviewer Agent
+Combines complexity, security, style, and duplication scans into a scored, prioritised review with fix suggestions.
+
+### 31. Email Classifier Agent
+Triages an inbox: category, priority score, action items, optional draft reply. Supports single + batch.
+
+### 32. Investment Allocator Agent
+Markowitz-lite rebalancer: drift vs target profile, buy/sell trade list, 0-100 risk score.
+
+### 33. SQL Migrator Agent
+Introspects a SQLite DB and emits PostgreSQL or MySQL DDL with type-conversion table and foreign-key plan.
+
+### 34. Changelog Generator Agent
+Turns a `git diff` or commit log into a grouped Markdown CHANGELOG entry with impact score.
+
+### 35. Quiz Master Agent
+Adaptive quiz with a Leitner-system spaced-repetition engine and per-session progress tracking.
+
+### 36. Contract Analyzer Agent
+Extracts parties, dates, obligations and risk flags from a contract, with a 0-100 risk score.
+
+### 37. Lead Enricher Agent
+Enriches a sparse lead (name + company) with industry guess, company size, tech-stack hints, news, and a 0-100 score.
+
+### 38. Interview Coach Agent
+Conducts a role-specific mock interview, scores answers against a rubric, and produces a report card.
+
+### 39. Expense Auditor Agent
+Audits a list of expenses against a policy, applies anomaly detection, and returns approve/reject/review decisions.
+
+### 40. Knowledge Graph Agent
+Maintains an in-session SPO graph with neighbour lookups and shortest-path queries.
+
+### 41. A/B Test Analyzer Agent
+Two-proportion z-test + 95% CI + Bayesian P(B>A) + sample-size calculator.
+
+### 42. Content Moderator Agent
+Three-signal moderation (toxicity, PII, policy keywords) with redaction and a 0-100 risk score.
+
+### 43. Pantry-to-Recipe Agent
+Suggests recipes from a built-in DB, lists missing ingredients, and groups them by store aisle.
+
+### 44. System Incident Triage Agent
+Clusters log lines by fingerprint, matches against a runbook library, and returns a root-cause hypothesis with confidence.
+
 ## Official Documentation
 
 For more detailed information, check out the official ADK documentation:
