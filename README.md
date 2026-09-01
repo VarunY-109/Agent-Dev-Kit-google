@@ -101,6 +101,27 @@ Fetches public web pages with `urllib`, strips them to readable text, and surfac
 ### 17. Image Analysis Agent
 A multimodal agent that can describe, OCR and analyse images uploaded through the ADK web UI or referenced by file path.
 
+### 18. Weather Agent
+Looks up the current weather and a short forecast for any city using the free, no-key Open-Meteo API.
+
+### 19. Translator Agent
+Translates text between 20+ languages and returns a structured Pydantic response (source, target, formality, notes).
+
+### 20. Calculator Agent
+Performs exact arithmetic, unit conversions and percentage calculations using Python's own `ast` parser.
+
+### 21. YouTube Summarizer Agent
+Fetches a YouTube video's transcript and produces a structured summary with timestamps.
+
+### 22. PDF Reader Agent
+Reads a local PDF, extracts its text and answers questions about its content (uses `pypdf`).
+
+### 23. CSV Data Analyst Agent
+Loads a local CSV file and answers analytical questions about it using pure-Python statistics.
+
+### 24. Todo-list Agent
+Maintains a per-session todo list that the user can add to, query, mark done, and clear across multiple turns.
+
 ## Official Documentation
 
 For more detailed information, check out the official ADK documentation:
