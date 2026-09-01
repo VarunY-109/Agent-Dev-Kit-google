@@ -86,6 +86,21 @@ Leverage concurrent operations with parallel agents for improved efficiency and 
 ### 12. Loop Agent
 Build sophisticated agents that can iteratively refine their outputs through feedback loops.
 
+### 13. RAG Agent
+A retrieval-augmented generation agent that grounds its answers in an in-memory knowledge base using pure-Python cosine similarity.
+
+### 14. Code Execution Agent
+An agent that writes and runs short Python snippets inside a restricted sandbox to answer computational questions.
+
+### 15. SQL Database Agent
+Translates natural-language questions into read-only SQL queries against a local SQLite database and explains the results.
+
+### 16. Web Scraping Agent
+Fetches public web pages with `urllib`, strips them to readable text, and surfaces the most relevant paragraphs to the user.
+
+### 17. Image Analysis Agent
+A multimodal agent that can describe, OCR and analyse images uploaded through the ADK web UI or referenced by file path.
+
 ## Official Documentation
 
 For more detailed information, check out the official ADK documentation:
