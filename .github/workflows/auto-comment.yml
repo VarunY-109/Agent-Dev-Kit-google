@@ -1,0 +1,74 @@
+name: Auto Comment Agent
+
+on:
+  schedule:
+    - cron: '17 0 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  add-comments:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "32368847+VarunY-109@users.noreply.github.com"
+
+      - name: Run commit scheduler
+        id: scheduler
+        run: |
+          COMMITS_TODAY=$(python scripts/commit_scheduler.py)
+          echo "commits_today=$COMMITS_TODAY" >> $GITHUB_OUTPUT
+
+      - name: Add comments and commit
+        if: steps.scheduler.outputs.commits_today != '0'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          python scripts/add_comments.py ${{ steps.scheduler.outputs.commits_today }}
+
+      - name: Push commits
+        if: steps.scheduler.outputs.commits_today != '0'
+        run: |
+          git push origin main
+
+      - name: Send Telegram notification (success)
+        if: success() && steps.scheduler.outputs.commits_today != '0'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scripts/notify.py success "${{ steps.scheduler.outputs.commits_today }}"
+
+      - name: Send Telegram notification (rest day)
+        if: success() && steps.scheduler.outputs.commits_today == '0'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scripts/notify.py rest "0"
+
+      - name: Send Telegram notification (failure)
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python scripts/notify.py failure "0"
