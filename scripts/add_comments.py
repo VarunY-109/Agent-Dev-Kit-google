@@ -8,6 +8,7 @@ import sys
 import glob
 import json
 import subprocess
+import time
 import requests
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -72,8 +73,18 @@ Code:
         "max_tokens": 8000,
     }
 
-    response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
-    response.raise_for_status()
+    max_retries = 3
+    for attempt in range(max_retries):
+        response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
+        if response.status_code == 429:
+            wait_time = (attempt + 1) * 30
+            print(f"Rate limited, waiting {wait_time}s...", file=sys.stderr)
+            time.sleep(wait_time)
+            continue
+        response.raise_for_status()
+        break
+    else:
+        raise Exception("Max retries exceeded for OpenRouter API")
 
     result = response.json()
     content = result["choices"][0]["message"]["content"]
@@ -147,6 +158,8 @@ def main():
         except Exception as e:
             print(f"Error processing {rel_path}: {e}", file=sys.stderr)
             continue
+
+        time.sleep(5)
 
     # Update file index
     new_index = (file_index + num_files) % len(py_files)
