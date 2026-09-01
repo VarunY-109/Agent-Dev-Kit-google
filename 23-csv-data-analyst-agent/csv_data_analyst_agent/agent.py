@@ -24,7 +24,6 @@ from typing import Any, Dict, List, Optional
 
 from google.adk.agents import Agent
 
-# Per-process in-memory cache: path -> {"rows": [...], "columns": [...], "dtypes": {...}}
 _CACHE: Dict[str, Dict[str, Any]] = {}
 
 _MAX_BYTES = 25 * 1024 * 1024  # 25 MB
@@ -75,7 +74,6 @@ def _read_csv(path: str) -> Dict[str, Any]:
     return {"rows": rows, "columns": columns, "dtypes": dtypes}
 
 
-# --- Tools -------------------------------------------------------------------
 def load_csv(path: str) -> dict:
     """Load a CSV file into the agent's in-memory cache.
 
@@ -214,13 +212,11 @@ def group_by(path: str, group_column: str, target_column: str,
                 value = max(nums)
         results.append({"key": key, agg: value})
 
-    # Sort descending for sum/mean/count, ascending for min/max.
     reverse = agg in {"sum", "mean", "count"}
     results.sort(key=lambda r: (r[agg] is None, -(r[agg] or 0) if reverse else (r[agg] or 0)))
     return {"status": "ok", "groups": results}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="csv_data_analyst_agent",
     model="gemini-2.0-flash",

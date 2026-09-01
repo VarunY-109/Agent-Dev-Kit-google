@@ -9,7 +9,6 @@ def get_stock_price(ticker: str) -> dict:
     print(f"--- Tool: get_stock_price called for {ticker} ---")
 
     try:
-        # Fetch stock data
         stock = yf.Ticker(ticker)
         current_price = stock.info.get("currentPrice")
 
@@ -19,7 +18,6 @@ def get_stock_price(ticker: str) -> dict:
                 "error_message": f"Could not fetch price for {ticker}",
             }
 
-        # Get current timestamp
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         return {
@@ -36,7 +34,6 @@ def get_stock_price(ticker: str) -> dict:
         }
 
 
-# Create the root agent
 stock_analyst = Agent(
     name="stock_analyst",
     model="gemini-2.0-flash",

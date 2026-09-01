@@ -50,7 +50,6 @@ def _validate(path: str) -> Dict:
     return {"status": "ok", "size": size}
 
 
-# --- Tools -------------------------------------------------------------------
 def pdf_info(path: str) -> dict:
     """Return basic metadata for a PDF file on disk."""
     ok = _validate(path)
@@ -164,7 +163,6 @@ def search_pdf(path: str, query: str, max_results: int = 10) -> dict:
     }
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="pdf_reader_agent",
     model="gemini-2.0-flash",

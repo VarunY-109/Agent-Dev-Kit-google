@@ -23,11 +23,8 @@ _TODO_KEY = "todo_list"
 _NEXT_ID_KEY = "todo_next_id"
 
 
-# --- Helpers -----------------------------------------------------------------
 def _get_state(ctx: ToolContext) -> Dict:
     """Return the mutable state dict from a ToolContext (any ADK version)."""
-    # ADK 0.3.0 exposes state as either an attribute or a property that
-    # returns a dict-like object. Both are supported here.
     state = getattr(ctx, "state", None)
     if state is None:
         raise RuntimeError("ToolContext.state is unavailable in this ADK version.")
@@ -39,7 +36,6 @@ def _get_list(state) -> List[Dict]:
     return list(state.get(_TODO_KEY, []) or [])
 
 
-# --- Tools -------------------------------------------------------------------
 def add_task(title: str, ctx: ToolContext) -> dict:
     """Add a task to the per-session todo list.
 
@@ -134,7 +130,6 @@ def clear_tasks(ctx: ToolContext) -> dict:
     return {"status": "ok", "removed": removed}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="todo_list_agent",
     model="gemini-2.0-flash",

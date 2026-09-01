@@ -20,9 +20,6 @@ from typing import Dict
 
 from google.adk.agents import Agent
 
-# --- Restricted execution environment ---------------------------------------
-# Only safe builtins are exposed. Anything that touches the filesystem,
-# network, or process spawn is removed.
 _SAFE_BUILTINS = {
     "abs": abs,
     "all": all,
@@ -51,7 +48,6 @@ _SAFE_BUILTINS = {
     "zip": zip,
 }
 
-# A small whitelist of importable, pure-Python math/statistics helpers.
 _SAFE_MODULES = {
     "math": __import__("math"),
     "statistics": __import__("statistics"),
@@ -71,7 +67,6 @@ def _build_globals() -> Dict:
     }
 
 
-# --- Tool exposed to the agent ----------------------------------------------
 def run_python(code: str) -> dict:
     """Execute a short Python snippet and return its result.
 
@@ -87,7 +82,6 @@ def run_python(code: str) -> dict:
     if not code or not code.strip():
         return {"status": "error", "error": "No code provided."}
 
-    # Quick safety net: refuse obviously dangerous calls.
     forbidden = ("open(", "subprocess", "os.system", "os.popen", "importlib",
                   "exec(", "eval(", "__import__", "shutil", "socket", "urllib")
     lower = code.lower()
@@ -105,7 +99,6 @@ def run_python(code: str) -> dict:
         with redirect_stdout(buffer):
             compiled = compile(code, "<sandbox>", "exec")
             exec(compiled, sandbox_globals)
-            # Try to evaluate the last expression line for a return value.
             lines = [ln for ln in code.splitlines() if ln.strip()]
             if lines:
                 try:
@@ -122,7 +115,6 @@ def run_python(code: str) -> dict:
             "error": f"{type(exc).__name__}: {exc}",
         }
 
-    # Make the result JSON-friendly.
     try:
         import json
 
@@ -138,7 +130,6 @@ def run_python(code: str) -> dict:
     }
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="code_execution_agent",
     model="gemini-2.0-flash",

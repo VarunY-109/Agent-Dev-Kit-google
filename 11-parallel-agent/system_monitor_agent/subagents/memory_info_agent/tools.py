@@ -18,7 +18,6 @@ def get_memory_info() -> Dict[str, Any]:
         Dict[str, Any]: Dictionary with memory information structured for ADK
     """
     try:
-        # Get memory information
         memory = psutil.virtual_memory()
         swap = psutil.swap_memory()
 
@@ -32,13 +31,11 @@ def get_memory_info() -> Dict[str, Any]:
             "swap_percentage": f"{swap.percent:.1f}%",
         }
 
-        # Calculate stats
         memory_usage = memory.percent
         swap_usage = swap.percent
         high_memory_usage = memory_usage > 80
         high_swap_usage = swap_usage > 80
 
-        # Format for ADK tool return structure
         return {
             "result": memory_info,
             "stats": {

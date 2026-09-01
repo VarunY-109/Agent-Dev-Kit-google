@@ -9,7 +9,6 @@ from question_answering_agent import question_answering_agent
 load_dotenv()
 
 
-# Create a new session service to store state
 session_service_stateful = InMemorySessionService()
 
 initial_state = {
@@ -22,7 +21,6 @@ initial_state = {
     """,
 }
 
-# Create a NEW session
 APP_NAME = "Brandon Bot"
 USER_ID = "brandon_hancock"
 SESSION_ID = str(uuid.uuid4())
@@ -59,7 +57,6 @@ session = session_service_stateful.get_session(
     app_name=APP_NAME, user_id=USER_ID, session_id=SESSION_ID
 )
 
-# Log final Session state
 print("=== Final Session State ===")
 for key, value in session.state.items():
     print(f"{key}: {value}")

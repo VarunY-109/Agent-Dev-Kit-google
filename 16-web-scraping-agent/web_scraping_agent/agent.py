@@ -23,7 +23,6 @@ from urllib.parse import urlparse
 
 from google.adk.agents import Agent
 
-# Restrict fetches to a reasonable size to avoid runaway downloads.
 _MAX_BYTES = 1_000_000   # 1 MB
 _TIMEOUT = 15            # seconds
 _USER_AGENT = "ADK-WebScrapingAgent/1.0 (+https://example.com)"
@@ -82,7 +81,6 @@ class _TextExtractor(HTMLParser):
     @property
     def paragraphs(self) -> List[str]:
         raw = "".join(self._chunks)
-        # Split on 2+ newlines, then collapse inner whitespace.
         blocks = re.split(r"\n{2,}", raw)
         return [
             _WS_RE.sub(" ", b).strip()
@@ -91,7 +89,6 @@ class _TextExtractor(HTMLParser):
         ]
 
 
-# --- Helpers -----------------------------------------------------------------
 def _is_safe_url(url: str) -> bool:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"}:
@@ -108,7 +105,6 @@ def _score(paragraph: str, keywords: List[str]) -> int:
     return sum(lower.count(kw) for kw in keywords)
 
 
-# --- Tools -------------------------------------------------------------------
 def fetch_url(url: str, max_chars: int = 8000) -> dict:
     """Download a web page and return a cleaned, summarised view.
 
@@ -196,7 +192,6 @@ def extract_text(text: str, query: str = "", max_paragraphs: int = 5) -> dict:
     }
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="web_scraping_agent",
     model="gemini-2.0-flash",

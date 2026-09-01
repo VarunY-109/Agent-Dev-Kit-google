@@ -18,7 +18,6 @@ def get_cpu_info() -> Dict[str, Any]:
         Dict[str, Any]: Dictionary with CPU information structured for ADK
     """
     try:
-        # Get CPU information
         cpu_info = {
             "physical_cores": psutil.cpu_count(logical=False),
             "logical_cores": psutil.cpu_count(logical=True),
@@ -31,11 +30,9 @@ def get_cpu_info() -> Dict[str, Any]:
             "avg_cpu_usage": f"{psutil.cpu_percent(interval=1):.1f}%",
         }
 
-        # Calculate some stats for the result summary
         avg_usage = float(cpu_info["avg_cpu_usage"].strip("%"))
         high_usage = avg_usage > 80
 
-        # Format for ADK tool return structure
         return {
             "result": cpu_info,
             "stats": {

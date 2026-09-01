@@ -12,7 +12,6 @@ from google.adk.tools.base_tool import BaseTool
 from google.adk.tools.tool_context import ToolContext
 
 
-# --- Define a Simple Tool Function ---
 def get_capital_city(country: str) -> Dict[str, str]:
     """
     Retrieves the capital city of a given country.
@@ -37,7 +36,6 @@ def get_capital_city(country: str) -> Dict[str, str]:
         "india": "New Delhi",
     }
 
-    # Use lowercase for comparison
     result = country_capitals.get(country.lower(), f"Capital not found for {country}")
     print(f"[TOOL] Result: {result}")
     print(f"[TOOL] Returning: {{'result': '{result}'}}")
@@ -45,7 +43,6 @@ def get_capital_city(country: str) -> Dict[str, str]:
     return {"result": result}
 
 
-# --- Define Before Tool Callback ---
 def before_tool_callback(
     tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext
 ) -> Optional[Dict]:
@@ -56,14 +53,12 @@ def before_tool_callback(
     print(f"[Callback] Before tool call for '{tool_name}'")
     print(f"[Callback] Original args: {args}")
 
-    # If someone asks about 'Merica, convert to United States
     if tool_name == "get_capital_city" and args.get("country", "").lower() == "merica":
         print("[Callback] Converting 'Merica to 'United States'")
         args["country"] = "United States"
         print(f"[Callback] Modified args: {args}")
         return None
 
-    # Skip the call completely for restricted countries
     if (
         tool_name == "get_capital_city"
         and args.get("country", "").lower() == "restricted"
@@ -75,7 +70,6 @@ def before_tool_callback(
     return None
 
 
-# --- Define After Tool Callback ---
 def after_tool_callback(
     tool: BaseTool, args: Dict[str, Any], tool_context: ToolContext, tool_response: Dict
 ) -> Optional[Dict]:
@@ -90,11 +84,9 @@ def after_tool_callback(
     original_result = tool_response.get("result", "")
     print(f"[Callback] Extracted result: '{original_result}'")
 
-    # Add a note for any USA capital responses
     if tool_name == "get_capital_city" and "washington" in original_result.lower():
         print("[Callback] DETECTED USA CAPITAL - adding patriotic note!")
 
-        # Create a modified copy of the response
         modified_response = copy.deepcopy(tool_response)
         modified_response["result"] = (
             f"{original_result} (Note: This is the capital of the USA. 🇺🇸)"
@@ -108,7 +100,6 @@ def after_tool_callback(
     return None
 
 
-# Create the Agent
 root_agent = LlmAgent(
     name="tool_callback_agent",
     model="gemini-2.0-flash",

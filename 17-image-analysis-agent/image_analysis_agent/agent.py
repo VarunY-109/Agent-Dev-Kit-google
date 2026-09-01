@@ -20,8 +20,6 @@ import io
 import os
 from typing import Dict
 
-# Pillow is part of the Google ADK image stack; if it's not available
-# we degrade gracefully so the rest of the example still runs.
 try:
     from PIL import Image  # type: ignore
     _PIL_OK = True
@@ -35,7 +33,6 @@ _MAX_IMAGE_BYTES = 8 * 1024 * 1024  # 8 MB
 _ALLOWED_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
 
 
-# --- Helpers -----------------------------------------------------------------
 def _validate_path(path: str) -> Dict:
     if not path:
         return {"status": "error", "error": "No path provided."}
@@ -57,7 +54,6 @@ def _validate_path(path: str) -> Dict:
     return {"status": "ok", "suffix": suffix, "size": size}
 
 
-# --- Tools -------------------------------------------------------------------
 def image_metadata(path: str) -> dict:
     """Return basic metadata for an image file on disk.
 
@@ -108,7 +104,6 @@ def load_image(path: str, max_dim: int = 1024) -> dict:
         return ok
 
     if not _PIL_OK:
-        # Fall back to raw base64 - no resizing.
         with open(path, "rb") as f:
             data = f.read()
         return {
@@ -171,7 +166,6 @@ def dominant_colors(path: str, n: int = 5) -> dict:
 
     counts: Dict[int, int] = {}
     for r, g, b in pixels:
-        # Quantize to 4 bits per channel to cluster similar colours.
         key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4)
         counts[key] = counts.get(key, 0) + 1
 
@@ -186,7 +180,6 @@ def dominant_colors(path: str, n: int = 5) -> dict:
     return {"status": "ok", "colors": colors}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="image_analysis_agent",
     model="gemini-2.0-flash",

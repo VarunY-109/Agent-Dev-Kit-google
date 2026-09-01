@@ -8,10 +8,8 @@ from google.adk.agents.llm_agent import LlmAgent
 
 from .tools import count_characters, exit_loop
 
-# Constants
 GEMINI_MODEL = "gemini-2.0-flash"
 
-# Define the Post Reviewer Agent
 post_reviewer = LlmAgent(
     name="PostReviewer",
     model=GEMINI_MODEL,
@@ -19,7 +17,6 @@ post_reviewer = LlmAgent(
 
     Your task is to evaluate the quality of a LinkedIn post about Agent Development Kit (ADK).
     
-    ## EVALUATION PROCESS
     1. Use the count_characters tool to check the post's length.
        Pass the post text directly to the tool.
     
@@ -41,7 +38,6 @@ post_reviewer = LlmAgent(
          4. Conversational style
          5. Clear and concise writing
     
-    ## OUTPUT INSTRUCTIONS
     IF the post fails ANY of the checks above:
       - Return concise, specific feedback on what to improve
       
@@ -51,7 +47,6 @@ post_reviewer = LlmAgent(
       
     Do not embellish your response. Either provide feedback on what to improve OR call exit_loop and return the completion message.
     
-    ## POST TO REVIEW
     {current_post}
     """,
     description="Reviews post quality and provides feedback on what to improve or exits the loop if requirements are met",

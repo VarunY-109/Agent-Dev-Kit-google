@@ -4,7 +4,6 @@ import random
 from google.adk.agents import Agent
 from google.adk.models.lite_llm import LiteLlm
 
-# https://docs.litellm.ai/docs/providers/openrouter
 model = LiteLlm(
     model="openrouter/openai/gpt-4.1",
     api_key=os.getenv("OPENROUTER_API_KEY"),

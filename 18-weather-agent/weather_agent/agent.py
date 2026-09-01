@@ -24,8 +24,6 @@ _USER_AGENT = "ADK-WeatherAgent/1.0 (+https://example.com)"
 _GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 _WEATHER_URL = "https://api.open-meteo.com/v1/forecast"
 
-# Tiny inline WMO weather-code lookup so we don't need a third-party
-# library to interpret Open-Meteo responses.
 _WMO_CODES = {
     0: "Clear sky",
     1: "Mainly clear",
@@ -64,7 +62,6 @@ def _http_get_json(url: str) -> Dict:
         return json.loads(resp.read().decode("utf-8"))
 
 
-# --- Tools -------------------------------------------------------------------
 def geocode_city(name: str, count: int = 1) -> dict:
     """Resolve a city name to latitude/longitude coordinates.
 
@@ -177,7 +174,6 @@ def get_forecast(lat: float, lon: float, days: int = 3) -> dict:
     return {"status": "ok", "latitude": lat_f, "longitude": lon_f, "forecast": rows}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="weather_agent",
     model="gemini-2.0-flash",

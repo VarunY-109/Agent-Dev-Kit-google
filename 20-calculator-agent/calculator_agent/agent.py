@@ -22,7 +22,6 @@ from typing import Dict
 
 from google.adk.agents import Agent
 
-# Whitelist of binary operators allowed in `calculate`.
 _BIN_OPS: Dict[type, object] = {
     ast.Add: operator.add,
     ast.Sub: operator.sub,
@@ -87,7 +86,6 @@ def _safe_eval(node: ast.AST) -> float:
     raise ValueError(f"Unsupported expression node: {type(node).__name__}")
 
 
-# --- Tools -------------------------------------------------------------------
 def calculate(expression: str) -> dict:
     """Evaluate an arithmetic expression and return the exact result.
 
@@ -118,7 +116,6 @@ def calculate(expression: str) -> dict:
     return {"status": "ok", "expression": expression, "result": value, "pretty": pretty}
 
 
-# --- Unit conversion tables --------------------------------------------------
 _LENGTH_TO_M = {
     "mm": 0.001, "cm": 0.01, "m": 1.0, "km": 1000.0,
     "in": 0.0254, "ft": 0.3048, "yd": 0.9144, "mi": 1609.344,
@@ -136,7 +133,6 @@ _TEMP_UNITS = {"C", "F", "K"}
 
 
 def _convert_temperature(value: float, src: str, dst: str) -> float:
-    # Convert to Celsius first.
     if src == "C":
         c = value
     elif src == "F":
@@ -172,7 +168,6 @@ def unit_convert(value: float, src_unit: str, dst_unit: str, kind: str = "") -> 
     if not src or not dst:
         return {"status": "error", "error": "Both src_unit and dst_unit are required."}
 
-    # Auto-detect the kind if not provided.
     if not kind:
         if src in _LENGTH_TO_M and dst in _LENGTH_TO_M:
             kind = "length"
@@ -249,7 +244,6 @@ def percentage(part: float, whole: float, mode: str = "of") -> dict:
     return {"status": "ok", "mode": mode, "result": result, "pretty": pretty}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="calculator_agent",
     model="gemini-2.0-flash",

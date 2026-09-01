@@ -23,17 +23,14 @@ from urllib.parse import parse_qs, urlparse
 
 from google.adk.agents import Agent
 
-# youtube-transcript-api is optional; the agent still loads if it's
-# missing - it just can't fetch captions.
 try:
-    from youtube_transcript_api import YouTubeTranscriptApi  # type: ignore
+    from youtube_transcript_api import YouTubeTranscriptApi 
     _YT_OK = True
-except Exception:  # pragma: no cover - optional dependency
-    YouTubeTranscriptApi = None  # type: ignore
+except Exception: 
+    YouTubeTranscriptApi = None  
     _YT_OK = False
 
 
-# --- Helpers -----------------------------------------------------------------
 _YT_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com",
              "youtu.be", "www.youtu.be"}
 _ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
@@ -53,7 +50,6 @@ def _extract_id_from_url(url: str) -> str:
     raise ValueError(f"Could not parse video id from {url!r}")
 
 
-# --- Tools -------------------------------------------------------------------
 def extract_video_id(url: str) -> dict:
     """Extract the 11-character YouTube video id from a URL."""
     if not url or not url.strip():
@@ -101,7 +97,6 @@ def fetch_transcript(video_id: str, languages: str = "en") -> dict:
     except Exception as exc:  # noqa: BLE001 - library raises varied errors
         return {"status": "error", "error": f"Transcript fetch failed: {exc}"}
 
-    # Convert to a compact list of {start, duration, text} dicts.
     text = " ".join(seg.get("text", "").replace("\n", " ") for seg in segments).strip()
     return {
         "status": "ok",
@@ -162,7 +157,6 @@ def chunk_transcript(segments_json: str, chunks: int = 5) -> dict:
     return {"status": "ok", "chunk_count": len(out), "chunks": out}
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="youtube_summarizer_agent",
     model="gemini-2.0-flash",

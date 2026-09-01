@@ -7,10 +7,8 @@ for qualification.
 
 from google.adk.agents import LlmAgent
 
-# --- Constants ---
 GEMINI_MODEL = "gemini-2.0-flash"
 
-# Create the validator agent
 lead_validator_agent = LlmAgent(
     name="LeadValidatorAgent",
     model=GEMINI_MODEL,

@@ -23,31 +23,24 @@ def before_agent_callback(callback_context: CallbackContext) -> Optional[types.C
     Returns:
         None to continue with normal agent processing
     """
-    # Get the session state
     state = callback_context.state
 
-    # Record timestamp
     timestamp = datetime.now()
 
-    # Set agent name if not present
     if "agent_name" not in state:
         state["agent_name"] = "SimpleChatBot"
 
-    # Initialize request counter
     if "request_counter" not in state:
         state["request_counter"] = 1
     else:
         state["request_counter"] += 1
 
-    # Store start time for duration calculation in after_agent_callback
     state["request_start_time"] = timestamp
 
-    # Log the request
     print("=== AGENT EXECUTION STARTED ===")
     print(f"Request #: {state['request_counter']}")
     print(f"Timestamp: {timestamp.strftime('%Y-%m-%d %H:%M:%S')}")
 
-    # Print to console
     print(f"\n[BEFORE CALLBACK] Agent processing request #{state['request_counter']}")
 
     return None
@@ -63,22 +56,18 @@ def after_agent_callback(callback_context: CallbackContext) -> Optional[types.Co
     Returns:
         None to continue with normal agent processing
     """
-    # Get the session state
     state = callback_context.state
 
-    # Calculate request duration if start time is available
     timestamp = datetime.now()
     duration = None
     if "request_start_time" in state:
         duration = (timestamp - state["request_start_time"]).total_seconds()
 
-    # Log the completion
     print("=== AGENT EXECUTION COMPLETED ===")
     print(f"Request #: {state.get('request_counter', 'Unknown')}")
     if duration is not None:
         print(f"Duration: {duration:.2f} seconds")
 
-    # Print to console
     print(
         f"[AFTER CALLBACK] Agent completed request #{state.get('request_counter', 'Unknown')}"
     )
@@ -88,7 +77,6 @@ def after_agent_callback(callback_context: CallbackContext) -> Optional[types.Co
     return None
 
 
-# Create the Agent
 root_agent = LlmAgent(
     name="before_after_agent",
     model="gemini-2.0-flash",

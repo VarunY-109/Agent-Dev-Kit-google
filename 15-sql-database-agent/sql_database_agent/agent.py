@@ -22,7 +22,6 @@ from google.adk.agents import Agent
 DB_PATH = os.environ.get("SQLITE_DB_PATH", "sample.db")
 
 
-# --- Database helpers --------------------------------------------------------
 def _connect() -> sqlite3.Connection:
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -38,7 +37,6 @@ def _is_select_only(sql: str) -> bool:
     return first in {"select", "with", "pragma"}
 
 
-# --- Tools -------------------------------------------------------------------
 def seed_sample_database() -> dict:
     """Create a small demo e-commerce database on disk.
 
@@ -160,7 +158,6 @@ def run_sql(query: str, limit: int = 25) -> dict:
         }
 
     safe_limit = max(1, min(int(limit), 200))
-    # Append a LIMIT if the user didn't include one, to keep responses small.
     if "limit" not in query.lower():
         query = f"{query.rstrip(';')} LIMIT {safe_limit}"
 
@@ -180,7 +177,6 @@ def run_sql(query: str, limit: int = 25) -> dict:
     }
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="sql_database_agent",
     model="gemini-2.0-flash",

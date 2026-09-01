@@ -1,6 +1,5 @@
 from google.adk.agents import Agent
 
-# Create the course support agent
 course_support_agent = Agent(
     name="course_support",
     model="gemini-2.0-flash",

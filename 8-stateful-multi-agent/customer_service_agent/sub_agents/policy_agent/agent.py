@@ -1,6 +1,5 @@
 from google.adk.agents import Agent
 
-# Create the policy agent
 policy_agent = Agent(
     name="policy_agent",
     model="gemini-2.0-flash",

@@ -6,7 +6,6 @@ def get_nerd_joke(topic: str, tool_context: ToolContext) -> dict:
     """Get a nerdy joke about a specific topic."""
     print(f"--- Tool: get_nerd_joke called for topic: {topic} ---")
 
-    # Example jokes - in a real implementation, you might want to use an API
     jokes = {
         "python": "Why don't Python programmers like to use inheritance? Because they don't like to inherit anything!",
         "javascript": "Why did the JavaScript developer go broke? Because he used up all his cache!",
@@ -21,13 +20,11 @@ def get_nerd_joke(topic: str, tool_context: ToolContext) -> dict:
 
     joke = jokes.get(topic.lower(), jokes["default"])
 
-    # Update state with the last joke topic
     tool_context.state["last_joke_topic"] = topic
 
     return {"status": "success", "joke": joke, "topic": topic}
 
 
-# Create the funny nerd agent
 funny_nerd = Agent(
     name="funny_nerd",
     model="gemini-2.0-flash",

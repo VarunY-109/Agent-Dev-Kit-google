@@ -11,7 +11,6 @@ from .subagents.post_generator import initial_post_generator
 from .subagents.post_refiner import post_refiner
 from .subagents.post_reviewer import post_reviewer
 
-# Create the Refinement Loop Agent
 refinement_loop = LoopAgent(
     name="PostRefinementLoop",
     max_iterations=10,
@@ -22,7 +21,6 @@ refinement_loop = LoopAgent(
     description="Iteratively reviews and refines a LinkedIn post until quality requirements are met",
 )
 
-# Create the Sequential Pipeline
 root_agent = SequentialAgent(
     name="LinkedInPostGenerationPipeline",
     sub_agents=[

@@ -16,7 +16,6 @@ from google.adk.agents import LlmAgent
 from pydantic import BaseModel, Field
 
 
-# --- Pydantic output schema --------------------------------------------------
 SUPPORTED_LANGUAGES: List[str] = [
     "English", "Spanish", "French", "German", "Italian", "Portuguese",
     "Dutch", "Russian", "Chinese (Simplified)", "Japanese", "Korean",
@@ -58,7 +57,6 @@ class TranslationResult(BaseModel):
     )
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = LlmAgent(
     name="translator_agent",
     model="gemini-2.0-flash",

@@ -8,10 +8,8 @@ from google.adk.agents import LlmAgent
 
 from .tools import get_cpu_info
 
-# --- Constants ---
 GEMINI_MODEL = "gemini-2.0-flash"
 
-# CPU Information Agent
 cpu_info_agent = LlmAgent(
     name="CpuInfoAgent",
     model=GEMINI_MODEL,

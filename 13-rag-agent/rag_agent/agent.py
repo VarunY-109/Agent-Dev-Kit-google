@@ -19,12 +19,9 @@ from typing import Dict, List, Tuple
 
 from google.adk.agents import Agent
 
-# --- In-memory knowledge base -------------------------------------------------
-# Each entry is a dict: {"title": str, "text": str, "tokens": Counter}
 _KNOWLEDGE_BASE: List[Dict] = []
 
 
-# --- Helper functions ---------------------------------------------------------
 _TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 
 
@@ -50,7 +47,6 @@ def _cosine(a: Dict[str, float], b: Dict[str, float]) -> float:
     return dot / (norm_a * norm_b)
 
 
-# --- Tools exposed to the agent ----------------------------------------------
 def add_document(title: str, text: str) -> dict:
     """Add a document to the in-memory knowledge base.
 
@@ -123,7 +119,6 @@ def list_documents() -> dict:
     }
 
 
-# --- Agent definition ---------------------------------------------------------
 root_agent = Agent(
     name="rag_agent",
     model="gemini-2.0-flash",

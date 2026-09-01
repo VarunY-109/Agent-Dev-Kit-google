@@ -18,7 +18,6 @@ def get_disk_info() -> Dict[str, Any]:
         Dict[str, Any]: Dictionary with disk information structured for ADK
     """
     try:
-        # Get disk information
         disk_info = {"partitions": []}
         partitions_over_threshold = []
         total_space = 0
@@ -28,13 +27,11 @@ def get_disk_info() -> Dict[str, Any]:
             try:
                 partition_usage = psutil.disk_usage(partition.mountpoint)
 
-                # Track high usage partitions
                 if partition_usage.percent > 85:
                     partitions_over_threshold.append(
                         f"{partition.mountpoint} ({partition_usage.percent:.1f}%)"
                     )
 
-                # Add to totals
                 total_space += partition_usage.total
                 used_space += partition_usage.used
 
@@ -50,15 +47,12 @@ def get_disk_info() -> Dict[str, Any]:
                     }
                 )
             except (PermissionError, FileNotFoundError):
-                # Some partitions may not be accessible
                 pass
 
-        # Calculate overall disk stats
         overall_usage_percent = (
             (used_space / total_space * 100) if total_space > 0 else 0
         )
 
-        # Format for ADK tool return structure
         return {
             "result": disk_info,
             "stats": {

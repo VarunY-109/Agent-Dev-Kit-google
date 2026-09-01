@@ -29,11 +29,9 @@ def before_model_callback(
     Returns:
         Optional LlmResponse to override model response
     """
-    # Get the state and agent name
     state = callback_context.state
     agent_name = callback_context.agent_name
 
-    # Extract the last user message
     last_user_message = ""
     if llm_request.contents and len(llm_request.contents) > 0:
         for content in reversed(llm_request.contents):
@@ -42,26 +40,22 @@ def before_model_callback(
                     last_user_message = content.parts[0].text
                     break
 
-    # Log the request
     print("=== MODEL REQUEST STARTED ===")
     print(f"Agent: {agent_name}")
     if last_user_message:
         print(f"User message: {last_user_message[:100]}...")
-        # Store for later use
         state["last_user_message"] = last_user_message
     else:
         print("User message: <empty>")
 
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
-    # Check for inappropriate content
     if last_user_message and "sucks" in last_user_message.lower():
         print("=== INAPPROPRIATE CONTENT BLOCKED ===")
         print("Blocked text containing prohibited word: 'sucks'")
 
         print("[BEFORE MODEL] ⚠️ Request blocked due to inappropriate content")
 
-        # Return a response to skip the model call
         return LlmResponse(
             content=types.Content(
                 role="model",
@@ -74,11 +68,9 @@ def before_model_callback(
             )
         )
 
-    # Record start time for duration calculation
     state["model_start_time"] = datetime.now()
     print("[BEFORE MODEL] ✓ Request approved for processing")
 
-    # Return None to proceed with normal model request
     return None
 
 
@@ -95,14 +87,11 @@ def after_model_callback(
     Returns:
         Optional LlmResponse to override model response
     """
-    # Log completion
     print("[AFTER MODEL] Processing response")
 
-    # Skip processing if response is empty or has no text content
     if not llm_response or not llm_response.content or not llm_response.content.parts:
         return None
 
-    # Extract text from the response
     response_text = ""
     for part in llm_response.content.parts:
         if hasattr(part, "text") and part.text:
@@ -111,13 +100,11 @@ def after_model_callback(
     if not response_text:
         return None
 
-    # Simple word replacements
     replacements = {
         "problem": "challenge",
         "difficult": "complex",
     }
 
-    # Perform replacements
     modified_text = response_text
     modified = False
 
@@ -129,7 +116,6 @@ def after_model_callback(
             )
             modified = True
 
-    # Return modified response if changes were made
     if modified:
         print("[AFTER MODEL] ↺ Modified response text")
 
@@ -140,11 +126,9 @@ def after_model_callback(
 
         return LlmResponse(content=types.Content(role="model", parts=modified_parts))
 
-    # Return None to use the original response
     return None
 
 
-# Create the Agent
 root_agent = LlmAgent(
     name="content_filter_agent",
     model="gemini-2.0-flash",

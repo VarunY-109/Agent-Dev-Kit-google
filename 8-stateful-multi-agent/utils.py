@@ -3,13 +3,11 @@ from datetime import datetime
 from google.genai import types
 
 
-# ANSI color codes for terminal output
 class Colors:
     RESET = "\033[0m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
 
-    # Foreground colors
     BLACK = "\033[30m"
     RED = "\033[31m"
     GREEN = "\033[32m"
@@ -19,7 +17,6 @@ class Colors:
     CYAN = "\033[36m"
     WHITE = "\033[37m"
 
-    # Background colors
     BG_BLACK = "\033[40m"
     BG_RED = "\033[41m"
     BG_GREEN = "\033[42m"
@@ -43,26 +40,20 @@ def update_interaction_history(session_service, app_name, user_id, session_id, e
             - other keys are flexible depending on the action type
     """
     try:
-        # Get current session
         session = session_service.get_session(
             app_name=app_name, user_id=user_id, session_id=session_id
         )
 
-        # Get current interaction history
         interaction_history = session.state.get("interaction_history", [])
 
-        # Add timestamp if not already present
         if "timestamp" not in entry:
             entry["timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Add the entry to interaction history
         interaction_history.append(entry)
 
-        # Create updated state
         updated_state = session.state.copy()
         updated_state["interaction_history"] = interaction_history
 
-        # Create a new session with updated state
         session_service.create_session(
             app_name=app_name,
             user_id=user_id,
@@ -113,14 +104,11 @@ def display_state(
             app_name=app_name, user_id=user_id, session_id=session_id
         )
 
-        # Format the output with clear sections
         print(f"\n{'-' * 10} {label} {'-' * 10}")
 
-        # Handle the user name
         user_name = session.state.get("user_name", "Unknown")
         print(f"👤 User: {user_name}")
 
-        # Handle purchased courses
         purchased_courses = session.state.get("purchased_courses", [])
         if purchased_courses and any(purchased_courses):
             print("📚 Courses:")
@@ -134,12 +122,10 @@ def display_state(
         else:
             print("📚 Courses: None")
 
-        # Handle interaction history in a more readable way
         interaction_history = session.state.get("interaction_history", [])
         if interaction_history:
             print("📝 Interaction History:")
             for idx, interaction in enumerate(interaction_history, 1):
-                # Pretty format dict entries, or just show strings
                 if isinstance(interaction, dict):
                     action = interaction.get("action", "interaction")
                     timestamp = interaction.get("timestamp", "unknown time")
@@ -150,7 +136,6 @@ def display_state(
                     elif action == "agent_response":
                         agent = interaction.get("agent", "unknown")
                         response = interaction.get("response", "")
-                        # Truncate very long responses for display
                         if len(response) > 100:
                             response = response[:97] + "..."
                         print(f'  {idx}. {agent} response at {timestamp}: "{response}"')
@@ -169,7 +154,6 @@ def display_state(
         else:
             print("📝 Interaction History: None")
 
-        # Show any additional state keys that might exist
         other_keys = [
             k
             for k in session.state.keys()
@@ -189,14 +173,12 @@ async def process_agent_response(event):
     """Process and display agent response events."""
     print(f"Event ID: {event.id}, Author: {event.author}")
 
-    # Check for specific parts first
     has_specific_part = False
     if event.content and event.content.parts:
         for part in event.content.parts:
             if hasattr(part, "text") and part.text and not part.text.isspace():
                 print(f"  Text: '{part.text.strip()}'")
 
-    # Check for final response after specific parts
     final_response = None
     if not has_specific_part and event.is_final_response():
         if (
@@ -206,7 +188,6 @@ async def process_agent_response(event):
             and event.content.parts[0].text
         ):
             final_response = event.content.parts[0].text.strip()
-            # Use colors and formatting to make the final response stand out
             print(
                 f"\n{Colors.BG_BLUE}{Colors.WHITE}{Colors.BOLD}╔══ AGENT RESPONSE ═════════════════════════════════════════{Colors.RESET}"
             )
@@ -231,7 +212,6 @@ async def call_agent_async(runner, user_id, session_id, query):
     final_response_text = None
     agent_name = None
 
-    # Display state before processing the message
     display_state(
         runner.session_service,
         runner.app_name,
@@ -244,7 +224,6 @@ async def call_agent_async(runner, user_id, session_id, query):
         async for event in runner.run_async(
             user_id=user_id, session_id=session_id, new_message=content
         ):
-            # Capture the agent name from the event if available
             if event.author:
                 agent_name = event.author
 
@@ -254,7 +233,6 @@ async def call_agent_async(runner, user_id, session_id, query):
     except Exception as e:
         print(f"{Colors.BG_RED}{Colors.WHITE}ERROR during agent run: {e}{Colors.RESET}")
 
-    # Add the agent response to interaction history if we got a final response
     if final_response_text and agent_name:
         add_agent_response_to_history(
             runner.session_service,
@@ -265,7 +243,6 @@ async def call_agent_async(runner, user_id, session_id, query):
             final_response_text,
         )
 
-    # Display state after processing the message
     display_state(
         runner.session_service,
         runner.app_name,
