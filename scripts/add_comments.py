@@ -17,16 +17,6 @@ OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 MODEL = "minimax/minimax-m3:free"
 
 
-def has_sufficient_comments(file_content):
-    """Check if a file already has substantial comments/docstrings."""
-    lines = file_content.split('\n')
-    comment_lines = sum(1 for l in lines if l.strip().startswith('#') or '"""' in l or "'''" in l)
-    total_lines = len(lines)
-    if total_lines == 0:
-        return False
-    return (comment_lines / total_lines) > 0.3
-
-
 def get_all_py_files():
     """Get all .py files excluding __init__.py, __pycache__, and scripts."""
     pattern = os.path.join(REPO_ROOT, "**", "*.py")
@@ -53,21 +43,18 @@ def call_openrouter(file_content, file_name):
     if not api_key:
         raise ValueError("OPENROUTER_API_KEY environment variable not set")
 
-    prompt = f"""You are an expert Python code documenter. Your task is to ENHANCE the documentation of this Python file by adding MORE detailed and comprehensive comments.
+    prompt = f"""You are an expert Python code documenter. You MUST rewrite this file with SIGNIFICANTLY expanded documentation.
 
-Even if the code already has some comments, you MUST:
-1. Expand existing docstrings with more detail (parameters, return values, examples)
-2. Add inline comments explaining WHY the code does something, not just WHAT
-3. Add type hints in comments if not present
-4. Add complexity warnings for non-trivial logic
-5. Add usage examples in docstrings
-6. NEVER return the same code - always ADD new documentation
+CRITICAL RULE: You MUST return DIFFERENT code than what was provided. Even if comments exist, you MUST:
+1. Add a detailed module docstring explaining the purpose, usage, and examples
+2. Expand ALL existing docstrings to include: parameters, return values, exceptions, and examples
+3. Add inline comments explaining the reasoning behind code decisions
+4. Add type hints as comments: # type: (param) -> return_type
+5. Add TODO/FIXME/NOTE markers where relevant
+6. Add section headers with # === SECTION NAME === format
+7. Add version/author/date metadata in module docstring
 
-Rules:
-- Do NOT change any code logic
-- Do NOT remove existing comments
-- Do NOT return identical code - you MUST add new comments
-- Return ONLY the commented Python code, no explanations
+NEVER return the same code. ALWAYS add NEW documentation elements.
 
 File: {file_name}
 
@@ -159,9 +146,6 @@ def main():
         try:
             with open(file_path, "r") as f:
                 original = f.read()
-
-            if has_sufficient_comments(original):
-                continue
 
             commented = call_openrouter(original, rel_path)
 
