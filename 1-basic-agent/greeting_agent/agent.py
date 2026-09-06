@@ -11,27 +11,28 @@ Purpose:
     The example is intentionally lightweight — no custom tools, no sub-agents,
     no state management — making it an ideal first project for developers
     exploring how the ADK loads and executes agents from a directory layout
-    that follows the `greeting_agent/agent.py` convention.
+    that follows the ``greeting_agent/agent.py`` convention.
 
-Architecture Overview:
-        +-------------------+
-        |   User (Client)   |
-        +---------+---------+
-                  |
-                  v   HTTP / CLI
-        +---------+---------+        +--------------------+
-        |   ADK Runtime     | -----> |   root_agent       |
-        | (adk run / api_   |        | (this module)      |
-        |  server)          | <----- |  - name            |
-        +-------------------+        |  - model           |
-                                     |  - instruction     |
-                                     +---------+----------+
-                                               |
-                                               v
-                                     +---------+----------+
-                                     | gemini-2.0-flash   |
-                                     | (Generative Model) |
-                                     +--------------------+
+Architecture Overview::
+
+    +-------------------+
+    |   User (Client)   |
+    +---------+---------+
+              |
+              v   HTTP / CLI
+    +---------+---------+        +--------------------+
+    |   ADK Runtime     | -----> |   root_agent       |
+    | (adk run / api_   |        | (this module)      |
+    |  server)          | <----- |  - name            |
+    +-------------------+        |  - model           |
+                                 |  - instruction     |
+                                 +---------+----------+
+                                           |
+                                           v
+                                 +---------+----------+
+                                 | gemini-2.0-flash   |
+                                 | (Generative Model) |
+                                 +--------------------+
 
 Usage:
     The module is typically imported and executed via the ADK runtime.
@@ -44,7 +45,7 @@ Usage:
         adk api_server 1-basic-agent/greeting_agent
 
     Once the server is running, requests may be sent to the agent's endpoint
-    with a user message such as "Hello!" and the agent will prompt for the
+    with a user message such as ``"Hello!"`` and the agent will prompt for the
     user's name before replying with a personalized greeting.
 
     Programmatic import is also supported for testing or composition::
@@ -62,12 +63,12 @@ Example:
     'Greeting agent'
 
 Conversational Flow:
-    1. User sends a message (e.g., "Hi there!").
-    2. The ADK runtime forwards the message to `root_agent`.
-    3. The agent, guided by its `instruction`, asks: "What is your name?"
-    4. User replies with their name (e.g., "Alice").
+    1. User sends a message (e.g., ``"Hi there!"``).
+    2. The ADK runtime forwards the message to ``root_agent``.
+    3. The agent, guided by its ``instruction``, asks: ``"What is your name?"``
+    4. User replies with their name (e.g., ``"Alice"``).
     5. The agent responds with a personalized greeting such as
-       "Hello, Alice! Nice to meet you."
+       ``"Hello, Alice! Nice to meet you."``
 
 Metadata:
     :author:  ADK Example Authors
@@ -76,7 +77,7 @@ Metadata:
     :license: Apache-2.0
     :see_also:
         - Google ADK documentation: https://google.github.io/adk-docs/
-        - Agent class reference: google.adk.agents.Agent
+        - Agent class reference: :class:`google.adk.agents.Agent`
 
 Change Log:
     * 0.2.0 - Expanded documentation, added self-check block, added
@@ -88,12 +89,12 @@ Change Log:
 # Imports
 # =====================================================================
 
-# Google ADK provides the `Agent` base class used to construct
-# conversational agents backed by large language models. The Agent
+# Google ADK provides the ``Agent`` base class used to construct
+# conversational agents backed by large language models. The ``Agent``
 # class wires together a model identifier, instruction prompt, and
 # metadata so the ADK runtime can orchestrate turns with the user.
 #
-# Importing `Agent` at module scope (rather than inside a function) is
+# Importing ``Agent`` at module scope (rather than inside a function) is
 # intentional: it ensures any import-time configuration issues are
 # surfaced immediately, and avoids repeated import overhead if the
 # module is reloaded across multiple test cases.
