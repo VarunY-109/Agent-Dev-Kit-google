@@ -1,5 +1,5 @@
 """
-Lead Qualification Agent - Root Pipeline Module.
+Lead Qualification Agent - Root Pipeline Module (v1.2.0).
 
 This module is the entry point for the sales development agent pipeline. It composes
 three specialized sub-agents into a deterministic, sequential workflow that mirrors
@@ -107,6 +107,8 @@ TODO
 - Add a ``version`` field to ``root_agent`` config once ADK supports it natively.
 - Consider exposing a ``pipeline_summary()`` helper for the ops dashboard.
 - Promote the smoke-test block into a proper pytest fixture.
+- Add ``mypy`` strict-mode compliance; the ``# type:`` comments are transitional.
+- Wire ``_run_smoke_test`` into the CI pre-merge job.
 """
 
 # === IMPORTS ==================================================================
@@ -114,6 +116,10 @@ TODO
 # Third-party ADK import. SequentialAgent is the orchestrator primitive that
 # guarantees ordered, single-threaded execution of sub-agents and provides
 # automatic shared session state propagation.
+#
+# NOTE: ``SequentialAgent`` is preferred over ``Agent`` with a free-form tool
+# loop here because the latter does not provide deterministic ordering and is
+# harder to audit for compliance reasons.
 #
 # type: GoogleADKModule
 from google.adk.agents import SequentialAgent  # type: SequentialAgent
@@ -295,6 +301,11 @@ def _run_smoke_test():
     See Also
     --------
     :data:`PIPELINE_NAME`, :data:`PIPELINE_DESCRIPTION`, :data:`PIPELINE_ORDER`.
+
+    .. note::
+        This function is intentionally side-effect free other than ``print``.
+        It will not invoke any LLM calls or hit external services, so it is
+        safe to run in CI without API keys configured.
     """
     # type: () -> None
     # Header banner for human readability when running from a terminal.
@@ -307,6 +318,8 @@ def _run_smoke_test():
         # type: (int, SequentialAgent) -> None
         # NOTE: We coerce the description to ``str(...)`` in case it is ever
         # upgraded to a richer type (e.g., a Pydantic model).
+        # Fallback string ``(no description)`` keeps the output table-aligned
+        # even if a future sub-agent omits the field.
         print(f"  {index}. {agent.name} - {getattr(agent, 'description', '(no description)')}")
     print("=== Smoke test complete (no sub-agents executed) ===")
 
@@ -314,4 +327,6 @@ def _run_smoke_test():
 if __name__ == "__main__":
     # Delegate to the helper so the body remains unit-testable in isolation
     # if we later decide to wire it into a CI sanity-check script.
+    # Using ``_run_smoke_test`` rather than inlining keeps the importable
+    # contract clean (callers can ``from ... import _run_smoke_test`` in tests).
     _run_smoke_test()
