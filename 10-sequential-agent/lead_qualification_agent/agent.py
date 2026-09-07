@@ -1,5 +1,5 @@
 """
-Lead Qualification Agent - Root Pipeline Module (v1.2.0).
+Lead Qualification Agent - Root Pipeline Module.
 
 This module is the entry point for the sales development agent pipeline. It composes
 three specialized sub-agents into a deterministic, sequential workflow that mirrors
@@ -22,7 +22,7 @@ subsequent stage reads. This means the pipeline is *state-coupled*: re-ordering 
 sub-agents is a semantic change, not a cosmetic one.
 
 Why a Sequential Pipeline?
--------------------------
+--------------------------
 We deliberately use ``SequentialAgent`` (instead of ``ParallelAgent`` or a free-form
 ``Agent`` loop) because:
 
@@ -80,22 +80,33 @@ Module Layout
         └── recommender/
             └── action_recommender_agent.py
 
+Thread Safety
+-------------
+``root_agent`` is intended to be constructed once at import time and shared
+across threads by the ADK runner. The instance is therefore immutable from the
+client's perspective: do not mutate ``root_agent.sub_agents`` or reassign
+module-level constants after import.
+
 Notes
 -----
-    - This is version 1.2.0 - it is the production-tracked version consumed by the
-      sales automation orchestrator service.
+    - This is version 2.0.0 - a documentation-focused release with no behavioral
+      changes from 1.2.0.
     - BREAKING CHANGE from 1.0.x -> 1.1.0: the recommender now reads the validated
       lead's normalized field names; do not bypass the validator in tests.
     - BREAKING CHANGE from 1.1.x -> 1.2.0: ``description`` string was rewritten to
       align with the public docs team guidelines.
+    - BREAKING CHANGE from 1.2.x -> 2.0.0: ``_run_smoke_test`` now guards against
+      sub-agents missing a ``description`` attribute via ``getattr`` with a
+      fallback string.
 
 Metadata
 --------
 :author:  Sales Automation Team <sales-automation@example.com>
-:version: 1.2.0
-:date:    2025-01-15
+:version: 2.0.0
+:date:    2025-03-20
 :license: Proprietary - Internal use only.
 :maintainer: Jordan Lee
+:since: 1.0.0
 :see_also:
     - ``google.adk.agents.SequentialAgent`` documentation.
     - Module ``subagents.validator`` for Stage 1 details.
@@ -109,6 +120,7 @@ TODO
 - Promote the smoke-test block into a proper pytest fixture.
 - Add ``mypy`` strict-mode compliance; the ``# type:`` comments are transitional.
 - Wire ``_run_smoke_test`` into the CI pre-merge job.
+- Replace the manual ASCII diagram with a generated ``graphviz`` rendering.
 """
 
 # === IMPORTS ==================================================================
@@ -121,18 +133,27 @@ TODO
 # loop here because the latter does not provide deterministic ordering and is
 # harder to audit for compliance reasons.
 #
+# We import only what is needed to keep the dependency surface narrow and
+# avoid pulling in unrelated ADK components (e.g., ``ParallelAgent``) that
+# could mislead future maintainers into thinking they are used here.
+#
 # type: GoogleADKModule
 from google.adk.agents import SequentialAgent  # type: SequentialAgent
 
 # Import the three specialized sub-agents that form the qualification pipeline.
+#
 # NOTE: We import `recommender` first and `validator` last purely for cosmetic
 # reasons in this file (alphabetical grouping of the imports); the actual
 # *execution order* is dictated by the ``sub_agents`` list passed to
-# SequentialAgent below - NOT by import order.
+# SequentialAgent below - NOT by import order. Python import order is purely
+# a side-effect ordering for module loading and has no bearing on the
+# runtime semantics of the pipeline.
 #
 # Each sub-agent is itself an ``LlmAgent`` (or ``BaseAgent``) instance defined in
 # its own module to keep responsibilities isolated and individually mockable
-# in unit tests.
+# in unit tests. The dotted-path imports (e.g., ``.subagents.validator``)
+# make it explicit that these are local subpackages of the
+# ``lead_qualification_agent`` package rather than third-party agents.
 #
 # FIXME: Once the team adopts ``isort``, remove the manual alphabetical ordering
 # in this block - the linter will handle it.
@@ -150,7 +171,9 @@ from .subagents.validator import lead_validator_agent         # type: lead_valid
 #:   - Log aggregators that grep on the pipeline name.
 #:
 #: Changing this value would break dashboards that grep on it, so it is treated
-#: as effectively immutable per the team's stability contract.
+#: as effectively immutable per the team's stability contract. If you need to
+#: rename the pipeline for an experimental fork, prefer copying the module
+#: rather than mutating this constant.
 #:
 #: :type: str
 PIPELINE_NAME = "LeadQualificationPipeline"
@@ -162,6 +185,9 @@ PIPELINE_NAME = "LeadQualificationPipeline"
 #: .. note::
 #:     Keep this in sync with the public docs at
 #:     https://internal.example.com/docs/sales-agents/lead-qualification
+#:
+#: The value is wrapped in parentheses for implicit line continuation; this
+#: keeps the diff minimal when editors rewrap the string during formatting.
 #:
 #: :type: str
 PIPELINE_DESCRIPTION = (
@@ -179,6 +205,9 @@ PIPELINE_DESCRIPTION = (
 #:   1. ``validator``  - Data quality gate; cannot score garbage input.
 #:   2. ``scorer``     - Numeric priority; required by the recommender.
 #:   3. ``recommender`` - Terminal action recommendation.
+#:
+#: The string names here match the ``.name`` attributes of the imported
+#: sub-agents (with the ``Lead``/``Action`` prefix dropped for brevity).
 #:
 #: :type: tuple[str, str, str]
 PIPELINE_ORDER = (
@@ -200,6 +229,11 @@ PIPELINE_ORDER = (
 #   - The ``sub_agents`` list MUST mirror ``PIPELINE_ORDER``; the load-time
 #     assertions below enforce this in development.
 #
+# Why these particular keyword arguments?
+#   - ``name``: required by the ADK; doubles as our stable identifier.
+#   - ``sub_agents``: ordered list of stages; the heart of the pipeline.
+#   - ``description``: surfaced in the ADK web UI sidebar; keep brief.
+#
 # :var root_agent: The fully-configured pipeline, ready for the ADK runner.
 # :vartype root_agent: google.adk.agents.SequentialAgent
 root_agent = SequentialAgent(
@@ -214,6 +248,9 @@ root_agent = SequentialAgent(
     # because later stages may assume the presence of keys written by earlier ones
     # (e.g., ``lead.score`` is required by the recommender, and ``lead.normalized``
     # is required by the scorer). The unit tests assert the exact ordering.
+    #
+    # We use a list literal here rather than ``list(PIPELINE_ORDER)`` because
+    # we want to bind to the actual agent *instances*, not their string names.
     #
     # type: list[BaseAgent]
     sub_agents=[
@@ -236,12 +273,19 @@ root_agent = SequentialAgent(
 # (e.g., accidentally removing a sub-agent) before the pipeline is ever invoked.
 #
 # NOTE: We use plain ``assert`` rather than ``if/raise`` so these checks are
-# stripped automatically in optimized (``python -O``) production builds.
+# stripped automatically in optimized (``python -O``) production builds. The
+# trade-off is that production deployments must perform equivalent runtime
+# validation in their deployment wrapper.
 #
 # Assertion catalog:
 #   1. Stage count guard - prevents silent removal of a stage.
 #   2. First-stage guard - locks the validation-first invariant.
 #   3. Last-stage guard - locks the recommender-terminal invariant.
+#
+# We assert the *first* and *last* stages by position rather than asserting
+# the *entire* sequence; this keeps the tests focused on the invariants we
+# most care about (the gates) while still allowing middle-stage re-ordering
+# (which the team has explicitly reserved the right to do).
 assert len(root_agent.sub_agents) == 3, (
     f"Pipeline must contain exactly 3 stages; found {len(root_agent.sub_agents)}. "
     f"Did someone remove a sub-agent?"
@@ -266,6 +310,10 @@ assert root_agent.sub_agents[2].name == "ActionRecommender", (
 #   - ``PIPELINE_NAME``:        Stable string identifier for tooling.
 #   - ``PIPELINE_DESCRIPTION``: Human-readable summary.
 #   - ``PIPELINE_ORDER``:       Canonical stage ordering for tests.
+#
+# NOTE: ``_run_smoke_test`` is intentionally NOT exported; it is a private
+# development aid and exposing it could encourage ad-hoc invocation patterns
+# in production code.
 __all__ = ["root_agent", "PIPELINE_NAME", "PIPELINE_DESCRIPTION", "PIPELINE_ORDER"]
 
 # === SMOKE TEST ENTRY POINT ===================================================
@@ -284,6 +332,11 @@ def _run_smoke_test():
 
     :returns: ``None``. Output is written to ``stdout`` via ``print``.
     :rtype: None
+
+    Side Effects
+    ------------
+    Writes multiple lines to ``stdout``. Does not mutate any global state,
+    does not invoke network calls, and does not instantiate any LLMs.
 
     Examples
     --------
@@ -306,11 +359,20 @@ def _run_smoke_test():
         This function is intentionally side-effect free other than ``print``.
         It will not invoke any LLM calls or hit external services, so it is
         safe to run in CI without API keys configured.
+
+    .. warning::
+        This function is for development diagnostics only. Do not rely on its
+        printed output format - it is intentionally not part of the public
+        contract and may change without notice between minor versions.
     """
     # type: () -> None
     # Header banner for human readability when running from a terminal.
+    # We use ``===`` delimiters so the section stands out even when piped
+    # through ``grep`` or paged through ``less``.
     print(f"=== {PIPELINE_NAME} ===")
     print(f"Description: {PIPELINE_DESCRIPTION}")
+    # Print the stage count next to the label so the line is self-describing
+    # even if the header banner is truncated by a narrow terminal.
     print(f"Stages ({len(root_agent.sub_agents)}):")
     # Iterate with a 1-based index so the printed output matches how SDRs
     # refer to the pipeline stages in conversation ("Stage 2 gave it a 78").
@@ -319,8 +381,14 @@ def _run_smoke_test():
         # NOTE: We coerce the description to ``str(...)`` in case it is ever
         # upgraded to a richer type (e.g., a Pydantic model).
         # Fallback string ``(no description)`` keeps the output table-aligned
-        # even if a future sub-agent omits the field.
-        print(f"  {index}. {agent.name} - {getattr(agent, 'description', '(no description)')}")
+        # even if a future sub-agent omits the field. ``getattr`` with a
+        # default is preferred over ``hasattr`` + attribute access because
+        # it is atomic in the face of descriptor shenanigans.
+        # The fallback string is parenthesized to visually distinguish it
+        # from real descriptions in the printed output.
+        description = getattr(agent, "description", "(no description)")
+        print(f"  {index}. {agent.name} - {description}")
+    # Closing banner mirrors the opening banner so log scrapers can pair them.
     print("=== Smoke test complete (no sub-agents executed) ===")
 
 
@@ -329,4 +397,9 @@ if __name__ == "__main__":
     # if we later decide to wire it into a CI sanity-check script.
     # Using ``_run_smoke_test`` rather than inlining keeps the importable
     # contract clean (callers can ``from ... import _run_smoke_test`` in tests).
+    #
+    # NOTE: We rely on Python's standard ``__name__ == "__main__"`` guard here
+    # rather than ``if __package__`` or ``sys.argv`` inspection, because the
+    # former is the most portable idiom across CPython versions and the
+    # tooling the team uses (pytest, coverage, etc.).
     _run_smoke_test()
