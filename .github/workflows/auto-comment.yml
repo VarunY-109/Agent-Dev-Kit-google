@@ -47,6 +47,8 @@ jobs:
       - name: Push commits
         if: steps.scheduler.outputs.commits_today != '0'
         run: |
+          git add .file_index .trajectory_index
+          git diff --cached --quiet .file_index .trajectory_index || git commit -m "chore: update indexes [skip ci]"
           git push origin main
 
       - name: Send Telegram notification (success)
@@ -63,6 +65,9 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          git add .file_index .trajectory_index
+          git diff --cached --quiet .file_index .trajectory_index || git commit -m "chore: update indexes [skip ci]"
+          git push origin main
           python scripts/notify.py rest "0"
 
       - name: Send Telegram notification (failure)
