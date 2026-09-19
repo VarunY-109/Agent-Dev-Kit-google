@@ -136,9 +136,8 @@ def main():
         file_index = int(f.read().strip())
 
     committed_files = []
-    files_processed = 0
 
-    for i in range(len(py_files)):
+    for i in range(num_files):
         idx = (file_index + i) % len(py_files)
         file_path = py_files[idx]
         rel_path = os.path.relpath(file_path, REPO_ROOT)
@@ -156,9 +155,6 @@ def main():
                 did_commit = git_commit(rel_path)
                 if did_commit:
                     committed_files.append(rel_path)
-                    files_processed += 1
-                    if files_processed >= num_files:
-                        break
             else:
                 pass
 
@@ -168,8 +164,8 @@ def main():
 
         time.sleep(5)
 
-    # Update file index
-    new_index = (file_index + files_processed) % len(py_files) if files_processed > 0 else file_index
+    # Update file index - always advance by num_files attempted
+    new_index = (file_index + num_files) % len(py_files)
     with open(FILE_INDEX_FILE, "w") as f:
         f.write(str(new_index))
 
