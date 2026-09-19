@@ -14,7 +14,7 @@ import requests
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FILE_INDEX_FILE = os.path.join(REPO_ROOT, ".file_index")
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "minimax/minimax-m3:free"
+MODEL = "inclusionai/ling-3.0-flash-vl:free"
 
 
 def get_all_py_files():
