@@ -42,8 +42,8 @@ jobs:
       - name: Push commits
         if: steps.scheduler.outputs.commits_today != '0'
         run: |
-          git add .file_index .trajectory_index
-          git diff --cached --quiet .file_index .trajectory_index || git commit -m "chore: update indexes [skip ci]"
+          git add .file_index
+          git diff --cached --quiet .file_index || git commit -m "chore: update file index [skip ci]"
           git push origin main
 
       - name: Send Telegram notification (success)
