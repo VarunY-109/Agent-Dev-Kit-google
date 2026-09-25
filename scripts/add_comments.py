@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Add Comments Agent - Adds AI-generated comments to Python files.
+Add Comments Agent - Adds timestamp comments to Python files.
 Usage: python add_comments.py <number_of_files>
 """
 import os
 import sys
 import glob
-import json
 import subprocess
-import time
-import requests
+from datetime import datetime, timezone, timedelta
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FILE_INDEX_FILE = os.path.join(REPO_ROOT, ".file_index")
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "inclusionai/ling-3.0-flash-vl:free"
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def get_all_py_files():
@@ -30,79 +28,26 @@ def get_all_py_files():
             continue
         if rel.startswith("scripts/"):
             continue
-        if rel == "add_comments.py":
-            continue
         filtered.append(f)
     filtered.sort()
     return filtered
 
 
-def call_openrouter(file_content, file_name):
-    """Call OpenRouter API to add comments to Python code."""
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if not api_key:
-        raise ValueError("OPENROUTER_API_KEY environment variable not set")
+def add_timestamp_comment(file_content):
+    """Add or update timestamp comment at the top of the file."""
+    now = datetime.now(IST).strftime("%Y-%m-%d %I:%M %p IST")
+    timestamp_line = f"# Updated: {now}\n"
 
-    prompt = f"""You are an expert Python code documenter. You MUST rewrite this file with SIGNIFICANTLY expanded documentation.
+    lines = file_content.split("\n")
 
-CRITICAL RULE: You MUST return DIFFERENT code than what was provided. Even if comments exist, you MUST:
-1. Add a detailed module docstring explaining the purpose, usage, and examples
-2. Expand ALL existing docstrings to include: parameters, return values, exceptions, and examples
-3. Add inline comments explaining the reasoning behind code decisions
-4. Add type hints as comments: # type: (param) -> return_type
-5. Add TODO/FIXME/NOTE markers where relevant
-6. Add section headers with # === SECTION NAME === format
-7. Add version/author/date metadata in module docstring
+    # Remove existing timestamp line if present
+    if lines and lines[0].startswith("# Updated:"):
+        lines = lines[1:]
 
-NEVER return the same code. ALWAYS add NEW documentation elements.
+    # Add new timestamp at top
+    lines.insert(0, timestamp_line.rstrip())
 
-File: {file_name}
-
-Code:
-```python
-{file_content}
-```"""
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    payload = {
-        "model": MODEL,
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
-        "max_tokens": 8000,
-    }
-
-    max_retries = 3
-    for attempt in range(max_retries):
-        response = requests.post(OPENROUTER_API_URL, headers=headers, json=payload, timeout=60)
-        if response.status_code == 429:
-            wait_time = (attempt + 1) * 30
-            print(f"Rate limited, waiting {wait_time}s...", file=sys.stderr)
-            time.sleep(wait_time)
-            continue
-        response.raise_for_status()
-        break
-    else:
-        raise Exception("Max retries exceeded for OpenRouter API")
-
-    result = response.json()
-    content = result["choices"][0]["message"]["content"]
-
-    # Extract code from markdown block if present
-    if "```python" in content:
-        start = content.index("```python") + 9
-        end = content.index("```", start)
-        content = content[start:end].strip()
-    elif "```" in content:
-        start = content.index("```") + 3
-        end = content.index("```", start)
-        content = content[start:end].strip()
-
-    return content
+    return "\n".join(lines)
 
 
 def git_commit(file_rel_path):
@@ -146,25 +91,20 @@ def main():
             with open(file_path, "r") as f:
                 original = f.read()
 
-            commented = call_openrouter(original, rel_path)
+            updated = add_timestamp_comment(original)
 
-            if commented.strip() != original.strip():
-                with open(file_path, "w") as f:
-                    f.write(commented)
+            with open(file_path, "w") as f:
+                f.write(updated)
 
-                did_commit = git_commit(rel_path)
-                if did_commit:
-                    committed_files.append(rel_path)
-            else:
-                pass
+            did_commit = git_commit(rel_path)
+            if did_commit:
+                committed_files.append(rel_path)
 
         except Exception as e:
             print(f"Error processing {rel_path}: {e}", file=sys.stderr)
             continue
 
-        time.sleep(5)
-
-    # Update file index - always advance by num_files attempted
+    # Update file index
     new_index = (file_index + num_files) % len(py_files)
     with open(FILE_INDEX_FILE, "w") as f:
         f.write(str(new_index))
