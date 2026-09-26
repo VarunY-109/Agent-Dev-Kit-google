@@ -1,3 +1,4 @@
+# Updated: 2026-09-26 11:11 AM IST
 """Stock Research Agent.
 
 A multi-source research agent that combines a price snapshot, recent
