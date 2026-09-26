@@ -1,3 +1,4 @@
+# Updated: 2026-09-26 11:11 AM IST
 """Resume Tailor Agent.
 
 Compares a candidate's resume to a job description and produces a
