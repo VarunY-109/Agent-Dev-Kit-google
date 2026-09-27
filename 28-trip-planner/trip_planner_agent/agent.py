@@ -1,3 +1,4 @@
+# Updated: 2026-09-27 11:11 AM IST
 """Trip Planner Agent.
 
 Builds a multi-city itinerary given dates, budget, traveller count
