@@ -1,3 +1,4 @@
+# Updated: 2026-09-27 11:11 AM IST
 """Diet Coach Agent.
 
 Builds a daily meal plan that hits a user-specified calorie and
