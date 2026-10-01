@@ -1,3 +1,4 @@
+# Updated: 2026-10-01 11:15 AM IST
 """Investment Allocator Agent.
 
 A Markowitz-lite portfolio rebalancer. Takes the current holdings
