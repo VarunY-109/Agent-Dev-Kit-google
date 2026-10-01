@@ -1,3 +1,4 @@
+# Updated: 2026-10-01 11:15 AM IST
 """SQL Migrator Agent.
 
 Reads a SQLite schema, infers a logical ER model, and emits a
