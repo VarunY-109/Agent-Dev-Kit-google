@@ -1,3 +1,4 @@
+# Updated: 2026-10-02 11:15 AM IST
 """Quiz Master Agent.
 
 Adaptive quiz generator with a tiny Leitner-system spaced-repetition
